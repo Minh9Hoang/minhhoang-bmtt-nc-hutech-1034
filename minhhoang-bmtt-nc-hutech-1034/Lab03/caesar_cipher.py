@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow,QMessageBox
 from ui.caesar import Ui_MainWindow
 import requests
 
@@ -8,25 +8,53 @@ class MyApp(QMainWindow):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.ui.btnencrypt.clicked.connect(self.encrypt)
-        self.ui.btndecrypt.clicked.connect(self.decrypt)
+        self.ui.btn_encrypt.clicked.connect(self.call_api_encrypt)
+        self.ui.btn_decrypt.clicked.connect(self.call_api_decrypt)
+
     def call_api_encrypt(self):
-        url = "http://127.0.0.1:5000/caesar/encrypt"
+        url = "http://127.0.0.1:5000/api/caesar/encrypt"
         payload = {
-            "plaintext": self.ui.txtplaintext.toPlainText(),
-            "key": self.ui.txtkey.toPlainText()
+            "plain_text": self.ui.txt_plaintext.toPlainText(),
+            "key": self.ui.txt_key.toPlainText()
         }
         try:
             response = requests.post(url, json=payload)
             if response.status_code == 200:
-                return response.json()
-                self.ui.txtciphertext.setPlainText(data["encrypted.message"])
+                data = response.json()
+                self.ui.txt_ciphertext.setPlainText(data['encrypted message'])
 
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Information)
-                msg.setText("Encryption Successful")
+                msg.setText("Encrypt successfully")
                 msg.exec_()
             else:
-                print("Error:")
+                print("Error")
         except requests.exceptions.RequestException as e:
-            print("Error: %s" % e.message)
+            print("errol: %s"% e.encrypted_message)
+
+    def call_api_decrypt(self):
+        url = "http://127.0.0.1:5000/api/caesar/decrypt"
+        payload = {
+            "cipher_text": self.ui.txt_ciphertext.toPlainText(),
+            "key": self.ui.txt_key.toPlainText()
+        }
+        try:
+            response = requests.post(url, json=payload)
+            if response.status_code == 200:
+                data = response.json()
+                self.ui.txt_plaintext.setPlainText(data['decrypted message'])
+
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Information)
+                msg.setText("decrypt successfully")
+                msg.exec_()
+            else:
+                print("Error")
+        except requests.exceptions.RequestException as e:
+            print("errol: %s"% e.decrypted_message)
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MyApp()
+    window.show()
+    sys.exit(app.exec_())  
